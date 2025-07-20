@@ -85,7 +85,7 @@ DB_NAME = os.getenv("DB_NAME")
 ENDPOINT = os.getenv("DB_ENDPOINT")
 PORT = os.getenv("DB_PORT", 3306)  # 기본 포트 3306'''
 
-DB_URL = "mysql+pymysql://alstpdusMIN:Alstpdus!!@finance-db.c36egosuec87.ap-northeast-2.rds.amazonaws.com:3306/stock_data"
+DB_URL = "mysql+pymysql://alstpdusMin:Alstpdus!!@finance-db.c36egosuec87.ap-northeast-2.rds.amazonaws.com:3306/stock_data"
 engine = create_engine(DB_URL, echo=True)
 
 
