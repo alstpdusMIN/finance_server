@@ -105,8 +105,15 @@ def get_stock_info(stock_name: str, date: str, metric: str):
             WHERE s.name = :name AND dp.date = :date
         """)
         result = conn.execute(query, {"name": stock_name, "date": date}).fetchone()
+        
         if not result:
-            raise HTTPException(status_code=404, detail="데이터가 없습니다.")
+            return {
+                "stock_name": stock_name,
+                "date": date,
+                "metric": metric,
+                "value": None,
+                "message": f"{date}의 {metric} 데이터가 없습니다."
+            }
         
         return {
             "stock_name": stock_name,
@@ -114,6 +121,9 @@ def get_stock_info(stock_name: str, date: str, metric: str):
             "metric": metric,
             "value": result[0]
         }
+    
+
+    
 
 #2. 특정 시장 지수 조회
 @app.get("/markets/index")
@@ -131,6 +141,7 @@ def get_market_index(market: str, date: str):
             "date": date,
             "index_value": result[0]
         }
+    
 
 #3. 시장 통계 조회
 @app.get("/markets/stats")
