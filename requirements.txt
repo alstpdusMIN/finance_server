@@ -31,4 +31,5 @@ websockets==10.3
 sqlalchemy
 pymysql
 python-dotenv
+cryptography
 
