@@ -101,7 +101,7 @@ def get_stock_info(stock_name: str, date: str, metric: str):
             SELECT dp.{metric}
             FROM daily_prices dp
             JOIN stocks s ON dp.stock_id = s.stock_id
-            WHERE s.stock_name = :stock_name AND dp.date = :date
+            WHERE s.name = :name AND dp.date = :date
         """)
         result = conn.execute(query, {"stock_name": stock_name, "date": date}).fetchone()
         if not result:
