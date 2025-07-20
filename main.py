@@ -104,7 +104,7 @@ def get_stock_info(stock_name: str, date: str, metric: str):
             JOIN stocks s ON dp.stock_id = s.stock_id
             WHERE s.name = :name AND dp.date = :date
         """)
-        result = conn.execute(query, {"stock_name": stock_name, "date": date}).fetchone()
+        result = conn.execute(query, {"name": stock_name, "date": date}).fetchone()
         if not result:
             raise HTTPException(status_code=404, detail="데이터가 없습니다.")
         
