@@ -49,7 +49,7 @@ def custom_openapi():
     # 서버 정보 - 환경변수로 설정
     openapi_schema["servers"] = [
         {
-            "url": os.getenv("API_SERVER_URL"),
+            "url": os.getenv("API_SERVER_URL","https://port-0-finance-server-md8xojr9fed0268a.sel5.cloudtype.app"),
             "description": "Finance DB API Server"
         }
     ]
@@ -79,13 +79,13 @@ app.openapi = custom_openapi
 # 2. AWS RDS 연결 설정
 # ==============================================================================
 
-USER = os.getenv("USER_NAME")
+'''USER = os.getenv("USER_NAME")
 PASSWORD = os.getenv("USER_PASSWORD")
 DB_NAME = os.getenv("DB_NAME")
 ENDPOINT = os.getenv("DB_ENDPOINT")
-PORT = os.getenv("DB_PORT", 3306)  # 기본 포트 3306
+PORT = os.getenv("DB_PORT", 3306)  # 기본 포트 3306'''
 
-DB_URL = f"mysql+pymysql://{USER}:{PASSWORD}@{ENDPOINT}:{PORT}/{DB_NAME}"
+DB_URL = "mysql+pymysql://alstpdusMIN:Alstpdus!!@finance-db.c36egosuec87.ap-northeast-2.rds.amazonaws.com:3306/stock_data"
 engine = create_engine(DB_URL, echo=True)
 
 
