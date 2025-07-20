@@ -5,7 +5,8 @@ from fastapi.openapi.utils import get_openapi
 
 
 import pymysql
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
+
 from dotenv import load_dotenv
 import os
 
