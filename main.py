@@ -206,9 +206,11 @@ def get_topn_stocks(
 
     with engine.connect() as conn:
         results = conn.execute(text(base_query), params).mappings().fetchall()
-
+        
         if not results:
-            raise HTTPException(status_code=404, detail="No data found")
+            return {
+                "value": None
+            }
 
         if topn == 1:
             row = results[0]
