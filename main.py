@@ -178,7 +178,7 @@ def get_topn_stocks(
     market: Optional[str] = Query(None, description="시장명"),  
     metric: str = Query(...),
     date: str = Query(...),
-    topn: int = Query(5, ge=1)
+    topn: int=Query(...)
 ):
     if metric not in ALLOWED_METRICS:
         raise HTTPException(status_code=400, detail="Invalid metric name")
