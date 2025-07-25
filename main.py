@@ -192,7 +192,7 @@ def get_topn_stocks(
             ORDER BY dp.{metric} DESC
             LIMIT :topn
         """)
-        results = conn.execute(query, {"date": date, "market": market, "topn": topn}).fetchall()
+        results = conn.execute(query, {"date": date, "market": market, "topn": topn}).mappings().fetchall()
 
         if not results:
             raise HTTPException(status_code=404, detail="No data found")
