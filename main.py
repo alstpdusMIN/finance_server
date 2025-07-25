@@ -2,6 +2,7 @@ from fastapi import FastAPI, Query, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
+from typing import Union, List, Optional
 
 
 import pymysql
@@ -170,12 +171,13 @@ def get_market_stats(market: str, date: str, metric: str):
 
 
 #특정 시장 내의 TopN 종목 조회
-ALLOWED_METRICS = ["adjusted_close",'volume','change','change_rate']
-@app.get("/stocks/topn")
+ALLOWED_METRICS = ["adjusted_close", "volume", "change", "change_rate"]
+
+@app.get("/stocks/topn", response_model=Union[str, List[str]])
 def get_topn_stocks(
-    market: str,
-    metric: str,
-    date: str,
+    market: Optional[str] = Query(None, description="시장명"),  
+    metric: str = Query(...),
+    date: str = Query(...),
     topn: int = Query(5, ge=1)
 ):
     if metric not in ALLOWED_METRICS:
@@ -183,7 +185,7 @@ def get_topn_stocks(
 
     with engine.connect() as conn:
         query = text(f"""
-            SELECT s.name AS stock_name, s.market, dp.{metric}
+            SELECT s.name AS stock_name, dp.{metric}
             FROM daily_prices dp
             JOIN stocks s ON dp.stock_id = s.stock_id
             WHERE dp.date = :date AND s.market = :market
@@ -192,13 +194,15 @@ def get_topn_stocks(
         """)
         results = conn.execute(query, {"date": date, "market": market, "topn": topn}).fetchall()
 
-        return [
-            {
-                "rank": idx + 1,
-                "stock_name": row["stock_name"],
-                "market": row["market"],
-                metric: row[metric]
-            }
-            for idx, row in enumerate(results)
-        ]
+        if not results:
+            raise HTTPException(status_code=404, detail="No data found")
+
+        if topn == 1:
+            row = results[0]
+            amount = int(row[metric]) if metric == "volume" else round(row[metric], 2)
+            unit = "주" if metric == "volume" else ""
+            return f"{row['stock_name']}({amount}{unit})"
+        else:
+            return [row["stock_name"] for row in results]
+
     
