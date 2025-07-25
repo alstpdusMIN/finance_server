@@ -105,14 +105,14 @@ def get_stock_info(stock_name: str, date: str, metric: str):
             WHERE s.name = :name AND dp.date = :date
         """)
         result = conn.execute(query, {"name": stock_name, "date": date}).fetchone()
-        
+
         if not result:
             return {
                 "stock_name": stock_name,
                 "date": date,
                 "metric": metric,
                 "value": None,
-                "message": f"{date}의 {metric} 데이터가 없습니다."
+                #"message": f"{date}의 {metric} 데이터가 없습니다."
             }
         
         return {
@@ -121,7 +121,6 @@ def get_stock_info(stock_name: str, date: str, metric: str):
             "metric": metric,
             "value": result[0]
         }
-    
 
     
 
@@ -134,8 +133,12 @@ def get_market_index(market: str, date: str):
             WHERE market = :market AND date = :date
         """)
         result = conn.execute(query, {"market": market, "date": date}).fetchone()
+        
         if not result:
-            raise HTTPException(status_code=404, detail="지수 데이터가 없습니다.")
+            return {
+                "value": None
+            }
+        
         return {
             "market": market,
             "date": date,
@@ -152,11 +155,50 @@ def get_market_stats(market: str, date: str, metric: str):
             WHERE market = :market AND date = :date
         """)
         result = conn.execute(query, {"market": market, "date": date}).fetchone()
+        
         if not result:
-            raise HTTPException(status_code=404, detail="시장 통계 데이터가 없습니다.")
+            return {
+                "value": None
+            }
+        
         return {
             "market": market,
             "date": date,
             "metric": metric,
             "value": result[0]
         }
+
+
+#특정 시장 내의 TopN 종목 조회
+ALLOWED_METRICS = ["adjusted_close",'volume','change','change_rate']
+@app.get("/stocks/topn")
+def get_topn_stocks(
+    market: str,
+    metric: str,
+    date: str,
+    topn: int = Query(5, ge=1)
+):
+    if metric not in ALLOWED_METRICS:
+        raise HTTPException(status_code=400, detail="Invalid metric name")
+
+    with engine.connect() as conn:
+        query = text(f"""
+            SELECT s.name AS stock_name, s.market, dp.{metric}
+            FROM daily_prices dp
+            JOIN stocks s ON dp.stock_id = s.stock_id
+            WHERE dp.date = :date AND s.market = :market
+            ORDER BY dp.{metric} DESC
+            LIMIT :topn
+        """)
+        results = conn.execute(query, {"date": date, "market": market, "topn": topn}).fetchall()
+
+        return [
+            {
+                "rank": idx + 1,
+                "stock_name": row["stock_name"],
+                "market": row["market"],
+                metric: row[metric]
+            }
+            for idx, row in enumerate(results)
+        ]
+    
