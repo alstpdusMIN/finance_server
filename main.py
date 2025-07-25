@@ -171,28 +171,41 @@ def get_market_stats(market: str, date: str, metric: str):
 
 
 #특정 시장 내의 TopN 종목 조회
+
 ALLOWED_METRICS = ["adjusted_close", "volume", "change", "change_rate"]
 
 @app.get("/stocks/topn", response_model=Union[str, List[str]])
 def get_topn_stocks(
-    market: Optional[str] = Query(None, description="시장명"),  
-    metric: str = Query(...),
-    date: str = Query(...),
-    topn: int=Query(5, ge=1)
+    market: Optional[str] = Query(None, description="시장명 (예: KOSPI, KOSDAQ)"),
+    metric: str = Query(..., description="정렬 기준 지표 (예: volume)"),
+    date: str = Query(..., description="조회 날짜 (YYYY-MM-DD)"),
+    topn: Optional[int] = Query(None, description="가장 많은 경우 생략 가능")
 ):
     if metric not in ALLOWED_METRICS:
         raise HTTPException(status_code=400, detail="Invalid metric name")
 
+    if topn is None:
+        topn = 1  # "가장 많은" 의미로 자동 설정
+
+    # base query with dynamic WHERE clause
+    base_query = f"""
+        SELECT s.name AS stock_name, dp.{metric}
+        FROM daily_prices dp
+        JOIN stocks s ON dp.stock_id = s.stock_id
+        WHERE dp.date = :date
+    """
+
+    params = {"date": date, "topn": topn}
+
+    # 조건적으로 market 필터 추가
+    if market:
+        base_query += " AND s.market = :market"
+        params["market"] = market
+
+    base_query += f" ORDER BY dp.{metric} DESC LIMIT :topn"
+
     with engine.connect() as conn:
-        query = text(f"""
-            SELECT s.name AS stock_name, dp.{metric}
-            FROM daily_prices dp
-            JOIN stocks s ON dp.stock_id = s.stock_id
-            WHERE dp.date = :date AND s.market = :market
-            ORDER BY dp.{metric} DESC
-            LIMIT :topn
-        """)
-        results = conn.execute(query, {"date": date, "market": market, "topn": topn}).mappings().fetchall()
+        results = conn.execute(text(base_query), params).mappings().fetchall()
 
         if not results:
             raise HTTPException(status_code=404, detail="No data found")
@@ -204,5 +217,6 @@ def get_topn_stocks(
             return f"{row['stock_name']}({amount}{unit})"
         else:
             return [row["stock_name"] for row in results]
+
 
     
