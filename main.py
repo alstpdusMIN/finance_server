@@ -170,67 +170,60 @@ def get_market_stats(market: str, date: str, metric: str):
         }
 
 
-#특정 시장 내의 TopN 종목 조회
-
+# 4. TopN 종목 리스트 조회
 ALLOWED_METRICS = ["close_price", "volume", "change", "change_rate"]
 
-@app.get("/stocks/topn")   #response_model=Union[str, List[str]]
+@app.get("/stocks/topn", response_model=None)
 def get_topn_stocks(
-    market: Optional[str] = Query(None, description="시장명 (예: KOSPI, KOSDAQ)"),
-    metric: str = Query(..., description="정렬 기준 지표 (예: volume)"),
-    date: str = Query(..., description="조회 날짜 (YYYY-MM-DD)"),
-    topn: Optional[int] = Query(None, description="가장 많은 경우 생략 가능")
+    market: Optional[str] = Query(None),
+    metric: str = Query(...),
+    date: str = Query(...),
+    topn: int = Query(5, ge=1)
 ):
     if metric not in ALLOWED_METRICS:
         raise HTTPException(status_code=400, detail="Invalid metric name")
 
-    if topn is None:
-        topn = 1  # "가장 많은" 의미로 자동 설정
-
-    # base query with dynamic WHERE clause
     base_query = f"""
         SELECT s.name AS stock_name, dp.{metric}
         FROM daily_prices dp
         JOIN stocks s ON dp.stock_id = s.stock_id
         WHERE dp.date = :date
     """
-
     params = {"date": date, "topn": topn}
-
-    # 조건적으로 market 필터 추가
     if market:
         base_query += " AND s.market = :market"
         params["market"] = market
-
     base_query += f" ORDER BY dp.{metric} DESC LIMIT :topn"
 
     with engine.connect() as conn:
         results = conn.execute(text(base_query), params).mappings().fetchall()
-        
         if not results:
-            return {
-                "value": None
-            }
-        '''
-        if topn == 1:
-            row = results[0]
-            amount = f"{int(row[metric]):,}"  if metric in ["volume", "close_price"] else round(row[metric], 2)
-            return f"{row['stock_name']}({amount})"
-        else:
-            return [row["stock_name"] for row in results]'''
-        
-        row = results[0]
+            raise HTTPException(status_code=404, detail="No data found")
 
-        if metric in ["volume", "close_price"]:
-            formatted_amount = f"{int(row[metric]):,}"                 
-        else:
-            formatted_amount = f"{round(row[metric], 2):,}"  
+        response = []
+        for row in results:
+            formatted_amount = (
+                f"{int(row[metric]):,}"
+                if metric in ["volume", "close_price"]
+                else f"{round(row[metric], 2):,}"
+            )
+            response.append({
+                "stock_name": row["stock_name"],
+                "metric": metric,
+                "formatted_value": formatted_amount,
+                "raw_value": row[metric]
+            })
+        return response
 
-        return {
-            "stock_name": row["stock_name"],
-            "metric": metric,
-            "formatted_value": formatted_amount
-        }
+
+#5. 단일 최대값 종목 조회
+@app.get("/stocks/max", response_model=None)
+def get_max_stock(
+    market: Optional[str] = Query(None),
+    metric: str = Query(...),
+    date: str = Query(...)
+):
+    return get_topn_stocks(market=market, metric=metric, date=date, topn=1)[0]
 
 
     
