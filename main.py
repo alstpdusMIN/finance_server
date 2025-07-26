@@ -229,8 +229,7 @@ def get_topn_stocks(
         return {
             "stock_name": row["stock_name"],
             "metric": metric,
-            "formatted_value": formatted_amount,
-            "raw_value": row[metric]  # LLM이 필요하면 참조 가능
+            "formatted_value": formatted_amount
         }
 
 
