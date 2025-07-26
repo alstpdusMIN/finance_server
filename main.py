@@ -174,7 +174,7 @@ def get_market_stats(market: str, date: str, metric: str):
 
 ALLOWED_METRICS = ["close_price", "volume", "change", "change_rate"]
 
-@app.get("/stocks/topn", response_model=Union[str, List[str]])
+@app.get("/stocks/topn")   #response_model=Union[str, List[str]]
 def get_topn_stocks(
     market: Optional[str] = Query(None, description="시장명 (예: KOSPI, KOSDAQ)"),
     metric: str = Query(..., description="정렬 기준 지표 (예: volume)"),
