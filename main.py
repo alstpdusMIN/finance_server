@@ -202,9 +202,7 @@ def get_topn_stocks(
         results = conn.execute(text(base_query), params).mappings().fetchall()
         
         if not results:
-            return {
-                "value": None
-            }
+            return {"value": None}
 
         response = []
         for row in results:
@@ -230,13 +228,15 @@ def get_max_stock(
 ):
     try:
         result = get_topn_stocks(market=market, metric=metric, date=date, topn=1)
+        if isinstance(result, dict):
+            return result
         if not result:
-            return {"value": None}  # ✅ 데이터 없을 때 None 반환
+            return {"value": None}
+
         return result[0]
+
     except HTTPException as e:
         if e.status_code == 404:
-            return {"value": None}  # ✅ 404도 None으로 변환
+            return {"value": None}
         raise
-
-
     
