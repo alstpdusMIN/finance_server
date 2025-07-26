@@ -228,10 +228,15 @@ def get_max_stock(
     metric: str = Query(...),
     date: str = Query(...)
 ):
-    response=get_topn_stocks(market=market, metric=metric, date=date, topn=1)[0]
-    if not response:
-        return {"value": None}
-    return response
+    try:
+        result = get_topn_stocks(market=market, metric=metric, date=date, topn=1)
+        if not result:
+            return {"value": None}  # ✅ 데이터 없을 때 None 반환
+        return result[0]
+    except HTTPException as e:
+        if e.status_code == 404:
+            return {"value": None}  # ✅ 404도 None으로 변환
+        raise
 
 
     
