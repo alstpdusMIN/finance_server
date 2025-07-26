@@ -113,7 +113,7 @@ def get_stock_info(stock_name: str, date: str, metric: str):
                 "date": date,
                 "metric": metric,
                 "value": None,
-                "message": f"{date}의 {metric} 데이터가 없습니다."
+                "message": f"{date}의 {metric} 데이터가 없습니다.(영업일 아님)"
             }
         
         return {
@@ -137,7 +137,8 @@ def get_market_index(market: str, date: str):
         
         if not result:
             return {
-                "value": None
+                "value": None,
+                "message": f"{date}의 {market} 시장 지수 데이터가 없습니다.(영업일 아님)"
             }
         
         return {
@@ -159,7 +160,8 @@ def get_market_stats(market: str, date: str, metric: str):
         
         if not result:
             return {
-                "value": None
+                "value": None,
+                "message": f"{date}의 {metric} 데이터가 없습니다.(영업일 아님)"
             }
 
         return {
@@ -202,7 +204,10 @@ def get_topn_stocks(
         results = conn.execute(text(base_query), params).mappings().fetchall()
         
         if not results:
-            return {"value": None}
+            return {
+                "value": None,
+                "message": f"{date}의 {metric} 데이터가 없습니다.(영업일 아님)"
+            }
 
         response = []
         for row in results:
@@ -231,12 +236,18 @@ def get_max_stock(
         if isinstance(result, dict):
             return result
         if not result:
-            return {"value": None}
+            return {
+                "value": None,
+                "message": f"{date}의 {metric} 데이터가 없습니다.(영업일 아님)"
+            }
 
         return result[0]
 
     except HTTPException as e:
         if e.status_code == 404:
-            return {"value": None}
+            return {
+                "value": None,
+                "message": f"{date}의 {metric} 데이터가 없습니다.(영업일 아님)"
+            }
         raise
     
