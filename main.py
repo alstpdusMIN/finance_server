@@ -172,7 +172,7 @@ def get_market_stats(market: str, date: str, metric: str):
 
 #특정 시장 내의 TopN 종목 조회
 
-ALLOWED_METRICS = ["adjusted_close", "volume", "change", "change_rate"]
+ALLOWED_METRICS = ["close_price", "volume", "change", "change_rate"]
 
 @app.get("/stocks/topn", response_model=Union[str, List[str]])
 def get_topn_stocks(
