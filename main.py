@@ -178,6 +178,7 @@ def get_topn_stocks(
     market: Optional[str] = Query(None),
     metric: str = Query(...),
     date: str = Query(...),
+    order: str = Query("desc", regex="^(asc|desc)$"),
     topn: int = Query(5, ge=1)
 ):
     if metric not in ALLOWED_METRICS:
@@ -193,12 +194,17 @@ def get_topn_stocks(
     if market:
         base_query += " AND s.market = :market"
         params["market"] = market
-    base_query += f" ORDER BY dp.{metric} DESC LIMIT :topn"
+
+    order_by = "ASC" if order.lower() == "asc" else "DESC"
+    base_query += f" ORDER BY dp.{metric} {order_by} LIMIT :topn"
 
     with engine.connect() as conn:
         results = conn.execute(text(base_query), params).mappings().fetchall()
+        
         if not results:
-            raise HTTPException(status_code=404, detail="No data found")
+            return {
+                "value": None
+            }
 
         response = []
         for row in results:
@@ -210,8 +216,7 @@ def get_topn_stocks(
             response.append({
                 "stock_name": row["stock_name"],
                 "metric": metric,
-                "formatted_value": formatted_amount,
-                "raw_value": row[metric]
+                "formatted_value": formatted_amount
             })
         return response
 
