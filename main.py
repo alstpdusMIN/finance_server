@@ -228,7 +228,10 @@ def get_max_stock(
     metric: str = Query(...),
     date: str = Query(...)
 ):
-    return get_topn_stocks(market=market, metric=metric, date=date, topn=1)[0]
+    response=get_topn_stocks(market=market, metric=metric, date=date, topn=1)[0]
+    if not response:
+        return {"value": None}
+    return response
 
 
     
