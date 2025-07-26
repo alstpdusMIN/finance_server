@@ -161,12 +161,12 @@ def get_market_stats(market: str, date: str, metric: str):
             return {
                 "value": None
             }
-        
+
         return {
             "market": market,
             "date": date,
             "metric": metric,
-            "value": result[0]
+            "value": f"{int(result[0]):,}"
         }
 
 
