@@ -113,7 +113,7 @@ def get_stock_info(stock_name: str, date: str, metric: str):
                 "date": date,
                 "metric": metric,
                 "value": None,
-                #"message": f"{date}의 {metric} 데이터가 없습니다."
+                "message": f"{date}의 {metric} 데이터가 없습니다."
             }
         
         return {
