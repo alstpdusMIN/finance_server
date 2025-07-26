@@ -211,14 +211,27 @@ def get_topn_stocks(
             return {
                 "value": None
             }
-
+        '''
         if topn == 1:
             row = results[0]
-            amount = int(row[metric]) if metric == "volume" else round(row[metric], 2)
-            unit = "주" if metric == "volume" else ""
-            return f"{row['stock_name']}({amount}{unit})"
+            amount = f"{int(row[metric]):,}"  if metric in ["volume", "close_price"] else round(row[metric], 2)
+            return f"{row['stock_name']}({amount})"
         else:
-            return [row["stock_name"] for row in results]
+            return [row["stock_name"] for row in results]'''
+        
+        row = results[0]
+
+        if metric in ["volume", "close_price"]:
+            formatted_amount = f"{int(row[metric]):,}"                 
+        else:
+            formatted_amount = f"{round(row[metric], 2):,}"  
+
+        return {
+            "stock_name": row["stock_name"],
+            "metric": metric,
+            "formatted_value": formatted_amount,
+            "raw_value": row[metric]  # LLM이 필요하면 참조 가능
+        }
 
 
     
