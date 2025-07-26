@@ -195,7 +195,7 @@ def get_topn_stocks(
         base_query += " AND s.market = :market"
         params["market"] = market
 
-    order_by = "ASC" if order.lower() == "asc" else "DESC"
+    order_by = "ASC" if order == "asc" else "DESC"
     base_query += f" ORDER BY dp.{metric} {order_by} LIMIT :topn"
 
     with engine.connect() as conn:
