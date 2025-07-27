@@ -14,7 +14,7 @@ def get_volume_surge(
 
     with engine.connect() as conn:
         query = text("""
-            SELECT s.name AS stock_name, ti.volume_ratio, 
+            SELECT s.name AS stock_name, ti.volume_ratio
             FROM technical_indicators ti
             JOIN stocks s ON ti.stock_id = s.stock_id
             WHERE ti.date = :date AND ti.volume_ratio >= :threshold
