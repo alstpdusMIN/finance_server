@@ -4,9 +4,9 @@ from typing import Optional, Union, List
 from database import engine
 
 
-router = APIRouter(prefix="/complex", tags=["Complex Query"])
+router = APIRouter(prefix="/conditional", tags=["Complex Query"])
 
-@router.get("/conditional", response_model=None)
+@router.get("/condtion", response_model=None)
 def get_conditional_stocks(
     date: str,
     market: Optional[str] = Query(None, description="시장명(KOSPI, KOSDAQ)"),
