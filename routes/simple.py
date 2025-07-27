@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Query, HTTPException
 from sqlalchemy.sql import text
 from typing import Optional, Union, List
-from database import engine
+from main import engine
 
 
 router = APIRouter(prefix="/simple", tags=["Simple Query"])

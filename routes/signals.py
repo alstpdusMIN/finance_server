@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Query, HTTPException
 from sqlalchemy.sql import text
 from typing import Optional, List
-from database import engine
+from main import engine
 
 router = APIRouter(prefix="/signals", tags=["Technical Signals"])
 
@@ -25,7 +25,7 @@ def get_volume_surge(
 
 
 # 2. 볼린저 밴드 터치 종목 조회
-@router.get("/bollinger_touch", response_model=None)
+@router.get("/bb_band", response_model=None)
 def get_bollinger_touch(
     date: str, 
     band: str = Query("upper", enum=["upper", "lower"])
