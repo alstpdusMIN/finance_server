@@ -6,7 +6,7 @@ from database import engine
 router = APIRouter(prefix="/signals", tags=["Technical Signals"])
 
 # 1. 거래량 급증 종목 조회
-@router.get("/volume_surge", response_model=None)
+@router.get("/volume_surge", response_model=list)
 def get_volume_surge(
     date: str, 
     threshold: float = Query(2.0, description="거래량 비율 임계값 (기본 2.0)")
@@ -21,7 +21,8 @@ def get_volume_surge(
             ORDER BY ti.volume_ratio DESC
         """)
         results = conn.execute(query, {"date": date, "threshold": threshold}).mappings().fetchall()
-        return results if results else {"value": None}
+        formatted = [f"{row['stock_name']} ({round(row['volume_ratio'], 2)}%)" for row in results]
+        return formatted if formatted else {"value": None}
 
 
 # 2. 볼린저 밴드 터치 종목 조회
