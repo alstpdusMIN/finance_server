@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Query, HTTPException
 from sqlalchemy.sql import text
 from typing import Optional, List
-from main import engine
+from database import engine
 
 router = APIRouter(prefix="/signals", tags=["Technical Signals"])
 
