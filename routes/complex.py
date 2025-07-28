@@ -62,8 +62,7 @@ def get_conditional_stocks(
     metric_column = f"dp.{metric}" if metric in allowed_metrics else "dp.close_price"
 
     select_columns = ["s.name AS stock_name", "dp.date", metric_column]
-    if include_market:
-        select_columns.insert(1, "s.market")
+
     if extra_metric and extra_metric in allowed_metrics:
         select_columns.append(f"dp.{extra_metric}")
 
