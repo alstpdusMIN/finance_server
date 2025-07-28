@@ -27,13 +27,11 @@ def get_conditional_stocks(
     #==================조건 파라미터 정의==================
     conditions = ["dp.date = :date"]
     params = {"date": date}
-    include_market = False
 
     # 시장 조건 추가될 경우
     if market:
         conditions.append("s.market = :market")
         params["market"] = market
-        include_market = True
 
     #metric 표현식
     if compare_prev and metric == "volume":
