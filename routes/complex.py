@@ -11,7 +11,7 @@ def get_conditional_stocks(
     date: str,
     market: Optional[str] = Query(None, description="시장명(KOSPI, KOSDAQ)"),
     metric: str = Query(..., description="조건 메트릭 (close_price, volume, change_rate, volume_ratio)"),
-    operator: str = Query(">=", description="비교 연산자(>=, <=, BETWEEN)"),
+    operator: str = Query("gte", description="비교 연산자: gte(>=), lte(<=), between(BETWEEN)"),
     value: float = Query(..., description="비교 값1 (BETWEEN일 경우 하한)"),
     value2: Optional[float] = Query(None, description="BETWEEN 상한 (BETWEEN일 때만 사용)"),
     compare_prev: bool = Query(False, description="전날 대비 비율 계산 여부"),
@@ -19,11 +19,16 @@ def get_conditional_stocks(
     extra_operator: Optional[str] = Query(None),
     extra_value: Optional[float] = Query(None)
 ):
-    """
-    ✅ 다중 조건을 지원하는 종목 조회 API
-    - 가격 범위, 거래량 변화율, 거래량 절댓값, 등락률, 시장 조건, 복합 조건 처리
-    """
+    #operator mapping
+    op_map = {
+        "gte": ">=",
+        "lte": "<=",
+        "between": "BETWEEN"
+    }
 
+    sql_operator = op_map.get(operator.lower())
+
+    #==================조건별 파라미터 정의=====================
     conditions = ["dp.date = :date"]
     params = {"date": date}
 
@@ -32,6 +37,8 @@ def get_conditional_stocks(
         conditions.append("s.market = :market")
         params["market"] = market
 
+
+    #=======================메트릭 조건==========================
     # 1) 거래량 변화율(전날 대비 %) 계산
     if compare_prev and metric == "volume":
         metric_expr = "(dp.volume / prev.volume) * 100"  # 전날 대비 %
@@ -46,12 +53,15 @@ def get_conditional_stocks(
         params["v1"] = value
         params["v2"] = value2
     else:
-        conditions.append(f"{metric_expr} {operator} :v1")
+        conditions.append(f"{metric_expr} {sql_operator} :v1")
         params["v1"] = value
 
     # 3) 추가 조건 (AND)
     if extra_metric and extra_operator and extra_value is not None:
-        conditions.append(f"dp.{extra_metric} {extra_operator} :v_extra")
+        extra_op = op_map.get(extra_operator.lower())
+        if not extra_op:
+            raise HTTPException(status_code=400, detail="Invalid extra_operator")
+        conditions.append(f"dp.{extra_metric} {extra_op} :v_extra")
         params["v_extra"] = extra_value
 
     # 4) SQL 조합
