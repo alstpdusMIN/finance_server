@@ -6,7 +6,7 @@ from database import engine
 router = APIRouter(prefix="/conditional", tags=["Complex Query"])
 
 # ✅ 1) 기존 단일 조건 엔드포인트 유지
-@router.get("/simple", response_model=None)
+@router.get("/single", response_model=None)
 def get_conditional_stocks(
     date: str,
     market: Optional[str] = Query(None, description="시장명(KOSPI, KOSDAQ)"),
