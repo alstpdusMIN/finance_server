@@ -81,8 +81,9 @@ def get_conditional_stocks(
         params["v_extra"] = extra_value
         extra_select = f", {extra_expr}"
 
+    #==================SQL 쿼리 작성==================
     #SELECT, WHERE문 구성 
-    select_clause = f"s.name AS stock_name, dp.date, {metric_expr}{extra_select}"
+    select_clause = f"s.name AS stock_name, {metric_expr}{extra_select}"
     where_clause = " AND ".join(conditions)
 
     #SQL 조합
